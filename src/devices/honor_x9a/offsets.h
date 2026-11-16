@@ -1,10 +1,40 @@
 OFFSETS_ENTRY(
   "5.4.274-qgki-g6bced53b6b8b",
-  .kernel_phys_load = 0x40080000,
-  .phys_offset = 0x40000000,
+  .kernel_phys_load = 0xA8000000,
+  .phys_offset = 0x80000000,
   .off_init_task = 0x2cec2c0,
   .off_init_cred = 0x2cf8b78,
   .off_selinux_enforcing = 0x2eda001,
   .kimage_text_base = 0xffffffc008000000ULL,
-  STRUCT_OFFSETS_5_4
-),
+
+  // 5.4 icin dogrulanmis task_struct offsetleri
+  .task_prio = 0x84,
+  .task_normal_prio = 0x8c,
+  .task_sched_task_group = 0x310,
+  .task_pi_lock = 0x86c,
+  .task_pi_waiters = 0x880,
+  .task_pi_top_task = 0x890,
+  .task_pi_blocked_on = 0x898,
+  .task_pid = 0x898,
+  .task_tgid = 0x89c,
+  .task_real_parent = 0x5d8,
+  .task_atomic_flags = 0x590,
+  .task_real_cred = 0x838,
+  .task_cred = 0x840,
+  .task_comm = 0x928,
+  .task_tasks = 0x4c8,
+  .task_seccomp = 0x848,
+  .mm_owner = 0x348,
+  .waiter_compact = 1,
+
+  // fops offsetleri (5.10 uyumlu, gerekirse guncellenecek)
+  .fops_llseek = 0x08,
+  .fops_read = 0x10,
+  .fops_write = 0x18,
+  .fops_read_iter = 0x20,
+  .fops_write_iter = 0x28,
+  .fops_open = 0x70,
+  .fops_release = 0x80,
+  .fops_splice_read = 0xC8,
+  .fops_show_fdinfo = 0xE0
+)
