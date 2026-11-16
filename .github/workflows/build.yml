@@ -14,16 +14,20 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Android NDK
+    - name: Set up Android NDK (r25c)
       run: |
-        # NDK r26d indir
-        wget -q https://dl.google.com/android/repository/android-ndk-r26d-linux.zip
-        unzip -q android-ndk-r26d-linux.zip
-        echo "NDK_ROOT=$PWD/android-ndk-r26d" >> $GITHUB_ENV
+        # Daha stabil ve boyutu daha küçük olan NDK r25c'yi indir
+        wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
+        unzip -q android-ndk-r25c-linux.zip
+        # Yolu çevre değişkenine kaydet
+        echo "NDK_ROOT=$PWD/android-ndk-r25c" >> $GITHUB_ENV
 
     - name: Build GhostLock
       run: |
-        make NDK_ROOT=${{ env.NDK_ROOT }}
+        # NDK içindeki derleyiciyi kontrol et (debug için)
+        ls -la $NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android*-clang | head -n 5
+        # Derleme komutu
+        make NDK_ROOT=$NDK_ROOT
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
