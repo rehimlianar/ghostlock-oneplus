@@ -508,7 +508,7 @@ static void write_root_script(void) {
 }
 
 /* perf_find_task - only used when perf is available (shell context) */
-static uintptr_t perf_find_task(void) {
+uintptr_t perf_find_task(void) {
   struct perf_event_attr pe;
   memset(&pe, 0, sizeof(pe));
   pe.type = PERF_TYPE_SOFTWARE;
