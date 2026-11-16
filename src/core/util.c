@@ -999,8 +999,7 @@ uintptr_t fp_helper_setup(uintptr_t value, uintptr_t target, pid_t *out_pid) {
   }
   uint64_t dm = *sh;
   munmap((void *)sh, pg);
-  if (!stopped || !dm || dm < P0_PAGE_OFFSET || dm >= DIRECT_MAP_END ||
-      (dm & 7)) {
+  if (!stopped || !dm) {
     pr_warning("fp helper: stopped=%d dm=%016llx status=%#x\n", stopped,
                (unsigned long long)dm, st);
     if (c > 0) { kill(c, SIGKILL); waitpid(c, &st, 0); }
