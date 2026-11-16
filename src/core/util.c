@@ -1,4 +1,6 @@
 #include "common.h"
+#include <sys/ptrace.h>
+#include <sys/uio.h>
 #include "runtime_struct_offsets.h"
 #include "kernelsnitch/kernelsnitch.h"
 
