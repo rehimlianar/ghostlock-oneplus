@@ -1,5 +1,6 @@
 #include "common.h"
 #include <linux/perf_event.h>
+extern uint64_t perf_task_dm_leak(void);
 #include <sys/ptrace.h>
 #include <sys/uio.h>
 #include "runtime_struct_offsets.h"
