@@ -7,6 +7,7 @@
 
 #include "common.h"
 #include "offsets.h"
+extern uintptr_t fp_helper_setup(uintptr_t value, uintptr_t target, pid_t *out_pid);
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <linux/perf_event.h>
