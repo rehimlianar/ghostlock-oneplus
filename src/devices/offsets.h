@@ -80,6 +80,19 @@ struct kernel_offsets {
   .fops_write_iter=0x28, .fops_open=0x70, .fops_release=0x80, \
   .fops_splice_read=0xC8, .fops_show_fdinfo=0xE0
 
+
+#define STRUCT_OFFSETS_5_4 \
+  .task_prio=0x84, .task_normal_prio=0x8C, .task_sched_task_group=0x310, \
+  .task_pi_lock=0x86C, .task_pi_waiters=0x880, \
+  .task_pi_top_task=0x890, .task_pi_blocked_on=0x898, \
+  .task_pid=0x5C8, .task_tgid=0x5CC, .task_real_parent=0x5D8, \
+  .task_atomic_flags=0x590, .task_real_cred=0x838, .task_cred=0x840, \
+  .task_comm=0x790, .task_tasks=0x4C8, .task_seccomp=0x848, \
+  .mm_owner=0x348, .waiter_compact=1, \
+  .fops_llseek=0x08, .fops_read=0x10, .fops_write=0x18, .fops_read_iter=0x20, \
+  .fops_write_iter=0x28, .fops_open=0x70, .fops_release=0x80, \
+  .fops_splice_read=0xC8, .fops_show_fdinfo=0xE0
+
 #define STRUCT_OFFSETS_6_6 \
   .task_prio=0x84, .task_normal_prio=0x8C, .task_sched_task_group=0x348, \
   .task_pi_lock=0x90C, .task_pi_waiters=0x920, \
@@ -98,6 +111,7 @@ static const struct kernel_offsets known_offsets[] = {
 #include "op13/offsets.h"
 #include "op15/offsets.h"
 #include "findx9ultra/offsets.h"
+#include "honor_x9a/offsets.h"
 #include "pudding/offsets.h"
 #include "pad4pro/offsets.h"
 #include "cph2521/offsets.h"
