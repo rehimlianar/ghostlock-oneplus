@@ -7,4 +7,4 @@ OFFSETS_ENTRY(
   .off_selinux_enforcing = 0x2eda001,
   .kimage_text_base = 0xffffffc008000000ULL,
   STRUCT_OFFSETS_5_4
-)
+),
