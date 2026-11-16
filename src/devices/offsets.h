@@ -1,7 +1,7 @@
 #ifndef OFFSETS_H
 #define OFFSETS_H
 
-#include <stdint.h>
+// #include <stdint.h>
 
 struct kernel_offsets {
   const char *uname_r;
@@ -107,19 +107,19 @@ struct kernel_offsets {
 
 static const struct kernel_offsets known_offsets[] = {
   /* Add new devices by creating src/devices/<name>/offsets.h */
-#include "ace6t/offsets.h"
-#include "op13/offsets.h"
-#include "op15/offsets.h"
-#include "findx9ultra/offsets.h"
+// #include "ace6t/offsets.h"
+// #include "op13/offsets.h"
+// #include "op15/offsets.h"
+// #include "findx9ultra/offsets.h"
 #include "honor_x9a/offsets.h"
 // #include "pudding/offsets.h"
-#include "pad4pro/offsets.h"
-#include "cph2521/offsets.h"
-#include "vivot4/offsets.h"
-#include "vivoxfold3pro/offsets.h"
-#include "xperia1iv/offsets.h"
-#include "findx9pro/offsets.h"
-#include "vivox200ultra/offsets.h"
+// #include "pad4pro/offsets.h"
+// #include "cph2521/offsets.h"
+// #include "vivot4/offsets.h"
+// #include "vivoxfold3pro/offsets.h"
+// #include "xperia1iv/offsets.h"
+// #include "findx9pro/offsets.h"
+// #include "vivox200ultra/offsets.h"
   { .uname_r = NULL }
 };
 
