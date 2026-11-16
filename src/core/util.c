@@ -1,4 +1,3 @@
-#include <sys/ptrace.h>
 #include "common.h"
 #include "runtime_struct_offsets.h"
 #include "kernelsnitch/kernelsnitch.h"
@@ -1038,3 +1037,13 @@ uintptr_t fp_helper_setup(uintptr_t value, uintptr_t target, pid_t *out_pid) {
           (size_t)value, (size_t)target);
   return lock;
 }
+
+// === ptrace manuel tanimlamalari (Xperia FPU entegrasyonu) ===
+#include <sys/ptrace.h>
+#include <sys/uio.h>
+#ifndef PTRACE_TRACEME
+#define PTRACE_TRACEME 0
+#endif
+#ifndef PTRACE_SETREGSET
+#define PTRACE_SETREGSET 0x4205
+#endif
