@@ -37,4 +37,4 @@ OFFSETS_ENTRY(
   .fops_release = 0x80,
   .fops_splice_read = 0xC8,
   .fops_show_fdinfo = 0xE0
-)
+),
