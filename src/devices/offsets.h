@@ -112,7 +112,7 @@ static const struct kernel_offsets known_offsets[] = {
 #include "op15/offsets.h"
 #include "findx9ultra/offsets.h"
 #include "honor_x9a/offsets.h"
-#include "pudding/offsets.h"
+// #include "pudding/offsets.h"
 #include "pad4pro/offsets.h"
 #include "cph2521/offsets.h"
 #include "vivot4/offsets.h"
